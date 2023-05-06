@@ -4,6 +4,7 @@ from datetime import datetime
 import random
 import bcrypt
 import csv
+import time
 
 f = Faker()
 r = random
@@ -123,26 +124,28 @@ for n in product:
     n["modified_at"] = n["modified_at"][0]
     m = n["modified_at"]
     n["deleted_at"] = random.choices(
-        [m, f.date_time_between_dates(datetime_start=m, datetime_end=datetime.now())],
-        weights=[0.8795, 0.005],
+        ['null', m, f.date_time_between_dates(datetime_start=m, datetime_end=datetime.now())],
+        weights=[0.995, 0.004, 0.001],
     )
     n["deleted_at"] = n["deleted_at"][0]
 
+t = time.process_time()
 user = [
     {
         "id": f.unique.random_int(min=1000, max=999999999), 
-        "username": f.unique.word(), 
-        "password": bcrypt.hashpw(str.encode(f.unique.bothify(text="??##?###??#???#")), bcrypt.gensalt()),
+        "username": f.word() + str(f.random_int(min=1, max=9999)), 
+        "password": bcrypt.hashpw(str.encode(f.unique.password(length=r.randint(8,24))), bcrypt.gensalt()),
         "first_name": f.first_name(),
         "last_name": f.last_name(),
-        "telephone": f.unique.phone_number(),
+        "email": f.unique.ascii_email(),
         "created_at": f.date_time_between_dates(
             datetime_start=datetime(2022, 1, 1, 00, 00, 00), datetime_end=datetime.now()
         ),
         "modified_at": 0
     }
-    for x in range(10000)
+    for x in range(100)
 ]
+elapsed_time = time.process_time() - t
 
 for n in user:
     c = n["created_at"]
@@ -152,8 +155,12 @@ for n in user:
     )
     n["modified_at"] = n["modified_at"][0]
 
-header = product[0].keys()
-with open('product.csv', 'w') as t:
-    w = csv.DictWriter(t, header)
-    w.writeheader()
-    w.writerows(product)
+print(elapsed_time)
+
+
+
+#header = user[0].keys()
+#with open('product.csv', 'w', newline='') as t:
+#    w = csv.DictWriter(t, header)
+#    w.writeheader()
+#    w.writerows(user)
