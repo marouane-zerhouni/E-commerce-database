@@ -2,6 +2,8 @@ from faker import Faker
 import faker_commerce
 from datetime import datetime
 import random
+import bcrypt
+import csv
 
 f = Faker()
 r = random
@@ -126,5 +128,32 @@ for n in product:
     )
     n["deleted_at"] = n["deleted_at"][0]
 
+user = [
+    {
+        "id": f.unique.random_int(min=1000, max=999999999), 
+        "username": f.unique.word(), 
+        "password": bcrypt.hashpw(str.encode(f.unique.bothify(text="??##?###??#???#")), bcrypt.gensalt()),
+        "first_name": f.first_name(),
+        "last_name": f.last_name(),
+        "telephone": f.unique.phone_number(),
+        "created_at": f.date_time_between_dates(
+            datetime_start=datetime(2022, 1, 1, 00, 00, 00), datetime_end=datetime.now()
+        ),
+        "modified_at": 0
+    }
+    for x in range(10000)
+]
 
+for n in user:
+    c = n["created_at"]
+    n["modified_at"] = random.choices(
+        [c, f.date_time_between_dates(datetime_start=c, datetime_end=datetime.now())],
+        weights=[0.75, 0.25],
+    )
+    n["modified_at"] = n["modified_at"][0]
 
+header = product[0].keys()
+with open('product.csv', 'w') as t:
+    w = csv.DictWriter(t, header)
+    w.writeheader()
+    w.writerows(product)
